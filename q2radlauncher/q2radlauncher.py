@@ -5,6 +5,8 @@ from packaging import version
 from tkinter import messagebox
 
 from q2splash import Q2Splash
+import queue
+
 
 messagebox_title = "q2rad launcher"
 
@@ -23,32 +25,54 @@ class launcher:
         else:
             self.python = "python3"
         self.q2rad_folder = "q2rad"
+        self.splash_window = None
 
-        if self.run_q2rad_executable():
-            sys.exit(0)
-        self.run()
+        # if self.run_q2rad_executable():
+        #     self.exit(0)
+        # if self.run_q2rad_python():
+        #     self.exit(0)
 
-        self.t = Q2Terminal(echo=True)
+        self.splash_window = Q2Splash()
+
+        self.t = Q2Terminal(callback=self.terminal_callback)
 
         if not self.check_python():
-            sys.exit(1)
+            self.exit(1)
         if not self.check_folder():
-            sys.exit(2)
+            self.exit(2)
 
         self.t.run(f"cd {self.q2rad_folder}")
 
         # run splash
         if not self.check_pip():
-            sys.exit(3)
+            self.exit(3)
         if not self.check_virtualenv():
-            sys.exit(4)
-
+            self.exit(4)
         if not self.activate_virtualenv():
-            sys.exit(5)
+            self.exit(5)
         if not self.run_q2rad():
             self.install_q2rad()
             if not self.run_q2rad():
-                sys.exit(6)
+                self.exit(6)
+        self.splash_window.queue.put(None)
+
+    def exit(self, exit_code):
+        if self.splash_window:
+            self.splash_window.queue.put(None)
+        sys.exit(exit_code)
+
+    def hide_splash(self):
+        if self.splash_window:
+            self.splash_window.queue.put("__hide__")
+
+    def show_splash(self):
+        if self.splash_window:
+            self.splash_window.queue.put("__show__")
+
+    def terminal_callback(self, text):
+        if text == "True":
+            return
+        self.splash_window.queue.put(text)
 
     def check_python(self):
         python_version = (
@@ -74,6 +98,7 @@ class launcher:
         return True
 
     def check_pip(self):
+        self.t.run(f"echo 'check pip'")
         self.t.run(f"{self.python} -m pip --version")
         if self.t.exit_code != 0:
             mess("install pip")
@@ -84,10 +109,10 @@ class launcher:
         self.t.run(f"{self.python} -m virtualenv --version")
         if self.t.exit_code != 0:
             self.t.run(f"{self.python} -m pip install --upgrade virtualenv")
-        self.t.run(f"{self.python} -m virtualenv --version")
-        if self.t.exit_code != 0:
-            mess("Can not install virtualenv")
-            return False
+            self.t.run(f"{self.python} -m virtualenv --version")
+            if self.t.exit_code != 0:
+                mess("Can not install virtualenv")
+                return False
         return True
 
     def activate_virtualenv(self):
@@ -111,20 +136,22 @@ class launcher:
             return False
         return True
 
-    def run_q2rad(self):
-        self.t.run(f"{self.python} -m q2rad")
-        if self.t.exit_code != 0:
-            return False
-        return True
-
     def install_q2rad(self):
+        self.show_splash()
         self.t.run(f"{self.python} -m pip install --upgrade q2rad")
         if self.t.exit_code != 0:
             return False
         return True
 
+    def run_q2rad(self):
+        self.hide_splash()
+        self.t.run(f"{self.python} -m q2rad")
+        if self.t.exit_code != 0:
+            return False
+        return True
+
     def run_q2rad_executable(self):
-        t = Q2Terminal(echo=True)
+        t = Q2Terminal()
         t.run(f"cd {self.q2rad_folder}")
         if t.exit_code != 0:
             return False
@@ -137,14 +164,14 @@ class launcher:
             return False
         return True
 
-    def run(self):
-        self.t = Q2Terminal(echo=True)
+    def run_q2rad_python(self):
+        self.t = Q2Terminal()
         self.t.run(f"cd {self.q2rad_folder}")
         if self.t.exit_code != 0:
             return False
         if self.activate_virtualenv():
             if self.run_q2rad():
-                sys.exit(0)
+                self.exit(0)
         return False
 
 
