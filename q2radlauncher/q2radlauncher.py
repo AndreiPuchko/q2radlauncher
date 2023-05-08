@@ -4,7 +4,9 @@ import os
 from packaging import version
 from tkinter import messagebox
 
-messagebox_title = "q2rad launcher error"
+from q2splash import Q2Splash
+
+messagebox_title = "q2rad launcher"
 
 
 def mess(text):
@@ -32,12 +34,14 @@ class launcher:
             sys.exit(1)
         if not self.check_folder():
             sys.exit(2)
+
+        self.t.run(f"cd {self.q2rad_folder}")
+
+        # run splash
         if not self.check_pip():
             sys.exit(3)
         if not self.check_virtualenv():
             sys.exit(4)
-
-        self.t.run(f"cd {self.q2rad_folder}")
 
         if not self.activate_virtualenv():
             sys.exit(5)
@@ -45,16 +49,6 @@ class launcher:
             self.install_q2rad()
             if not self.run_q2rad():
                 sys.exit(6)
-
-    def run(self):
-        self.t = Q2Terminal(echo=True)
-        self.t.run(f"cd {self.q2rad_folder}")
-        if self.t.exit_code != 0:
-            return False
-        if self.activate_virtualenv():
-            if self.run_q2rad():
-                sys.exit(0)
-        return False
 
     def check_python(self):
         python_version = (
@@ -75,7 +69,7 @@ class launcher:
             os.mkdir(self.q2rad_folder)
 
         if not os.path.isdir(self.q2rad_folder):
-            mess("Can not create q2rad folder")
+            mess("Can not create folder: q2rad")
             return False
         return True
 
@@ -134,7 +128,7 @@ class launcher:
         t.run(f"cd {self.q2rad_folder}")
         if t.exit_code != 0:
             return False
-        
+
         if "win32" in sys.platform:
             t.run(f"{self.q2rad_folder}/scripts/q2rad")
         else:
@@ -142,6 +136,16 @@ class launcher:
         if t.exit_code != 0:
             return False
         return True
+
+    def run(self):
+        self.t = Q2Terminal(echo=True)
+        self.t.run(f"cd {self.q2rad_folder}")
+        if self.t.exit_code != 0:
+            return False
+        if self.activate_virtualenv():
+            if self.run_q2rad():
+                sys.exit(0)
+        return False
 
 
 launcher()
