@@ -14,6 +14,7 @@ class Q2SplashGui:
         self.root = tk.Tk()
         self.root.withdraw()
 
+        self.after_interval = 10
         self.splash_screen = tk.Toplevel(background="gray")
         self.splash_screen.overrideredirect(True)
         self.splash_screen.title("Splash Screen")
@@ -38,22 +39,23 @@ class Q2SplashGui:
         self.stdoutput = ScrolledText(self.splash_screen, padx=10, pady=10)
         self.stdoutput.config(state=tk.DISABLED)
         self.stdoutput.pack(fill=tk.BOTH, expand=True)
-
-        self.root.after(1, self.auto_step)
-        self.root.mainloop()
+        self.splash_screen.after(self.after_interval, self.auto_step)
+        self.splash_screen.mainloop()
 
     def auto_step(self):
         self.step()
         task = self.q.get()
         if task is None:
             self.root.destroy()
+        elif task == "":
+            pass
         elif task == "__hide__":
             self.splash_screen.withdraw()
         elif task == "__show__":
             self.splash_screen.deiconify()
         else:
             self.set_text(task)
-        self.root.after(10, self.auto_step)
+        self.splash_screen.after(self.after_interval, self.auto_step)
 
     def step(self):
         self.progressbar.step()
@@ -93,18 +95,23 @@ class Q2Splash(threading.Thread):
                 self.function(*self.args, **self.kwargs)
 
     def __init__(self):
-        self.queue = queue.Queue()
         super().__init__()
+        self.queue = queue.Queue()
         self.splash = None
-        # self.timer = self.RepeatTimer(interval=0.05, function=self.tick)
+        self.timer = self.RepeatTimer(interval=0.05, function=self.timer_tick)
+        self.timer.start()
         self.start()
 
     def put(self, data):
         self.queue.put(data)
+        if data is None:
+            self.timer.cancel()
 
-    def tick(self):
-        print(1)
-        self.splash.step()
+    def timer_tick(self):
+        if self.queue.qsize() == 0:
+            self.put("")
+        if self.splash:
+            self.splash.auto_step()
 
     def run(self):
         self.splash = Q2SplashGui(self.queue)
@@ -117,16 +124,16 @@ if __name__ == "__main__":
     splash_window = Q2Splash()
     for x in range(10):
         splash_window.put(f"x {x} --")
-        time.sleep(0.2)
+        # time.sleep(0.2)
     splash_window.put("__hide__")
     for x in range(10):
         splash_window.put(f"y {x} --")
-        time.sleep(0.2)
+        # time.sleep(0.2)
 
     splash_window.put("__show__")
     for x in range(10):
         splash_window.put(f"z {x} --")
-        time.sleep(0.2)
+        # time.sleep(0.2)
     time.sleep(5)
     splash_window.put(None)
     print("done")

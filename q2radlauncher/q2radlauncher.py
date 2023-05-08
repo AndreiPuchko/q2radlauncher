@@ -5,7 +5,6 @@ from packaging import version
 from tkinter import messagebox
 
 from q2splash import Q2Splash
-import queue
 
 
 messagebox_title = "q2rad launcher"
@@ -27,10 +26,10 @@ class launcher:
         self.q2rad_folder = "q2rad"
         self.splash_window = None
 
-        # if self.run_q2rad_executable():
-        #     self.exit(0)
-        # if self.run_q2rad_python():
-        #     self.exit(0)
+        if self.run_q2rad_executable():
+            self.exit(0)
+        if self.run_q2rad_python():
+            self.exit(0)
 
         self.splash_window = Q2Splash()
 
@@ -54,27 +53,28 @@ class launcher:
             self.install_q2rad()
             if not self.run_q2rad():
                 self.exit(6)
-        self.splash_window.queue.put(None)
+        self.splash_window.put(None)
 
     def exit(self, exit_code):
         if self.splash_window:
-            self.splash_window.queue.put(None)
+            self.splash_window.put(None)
         sys.exit(exit_code)
 
     def hide_splash(self):
         if self.splash_window:
-            self.splash_window.queue.put("__hide__")
+            self.splash_window.put("__hide__")
 
     def show_splash(self):
         if self.splash_window:
-            self.splash_window.queue.put("__show__")
+            self.splash_window.put("__show__")
 
     def terminal_callback(self, text):
         if text == "True":
             return
-        self.splash_window.queue.put(text)
+        self.splash_window.put(text)
 
     def check_python(self):
+        self.splash_window.put("Checking python version...")
         python_version = (
             self.t.run(f"{self.python} --version")[0].lower().replace("python ", "")
         )
@@ -98,7 +98,7 @@ class launcher:
         return True
 
     def check_pip(self):
-        self.t.run(f"echo 'check pip'")
+        self.splash_window.put("Checking pip")
         self.t.run(f"{self.python} -m pip --version")
         if self.t.exit_code != 0:
             mess("install pip")
@@ -106,24 +106,27 @@ class launcher:
         return True
 
     def check_virtualenv(self):
+        self.splash_window.put("Checking virtualenv...")
         self.t.run(f"{self.python} -m virtualenv --version")
         if self.t.exit_code != 0:
+            self.splash_window.put("Installing virtualenv...")
             self.t.run(f"{self.python} -m pip install --upgrade virtualenv")
-            self.t.run(f"{self.python} -m virtualenv --version")
+            # self.t.run(f"{self.python} -m virtualenv --version")
             if self.t.exit_code != 0:
                 mess("Can not install virtualenv")
                 return False
         return True
 
     def activate_virtualenv(self):
+        self.splash_window.put("Activating virtualenv...")
         if "win32" in sys.platform:
             self.t.run(f"{self.q2rad_folder}/scripts/activate")
         else:
             self.t.run(f"source {self.q2rad_folder}/bin/activate")
 
         if self.t.exit_code != 0:
-            self.t.run("echo create virtualenv")
-            self.t.run("pwd")
+            self.splash_window.put("Creating virtualenv...")
+            # self.t.run("pwd")
             self.t.run(f"{self.python} -m virtualenv q2rad")
         else:
             return True
@@ -138,6 +141,7 @@ class launcher:
 
     def install_q2rad(self):
         self.show_splash()
+        self.splash_window.put("Installing q2rad...")
         self.t.run(f"{self.python} -m pip install --upgrade q2rad")
         if self.t.exit_code != 0:
             return False
