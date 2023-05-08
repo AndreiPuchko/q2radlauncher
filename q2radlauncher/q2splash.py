@@ -117,14 +117,16 @@ class Q2Splash(threading.Thread):
         self.splash = Q2SplashGui(self.queue)
 
     def close(self):
-        self.join()
+        self.put(None)
 
 
 if __name__ == "__main__":
+    # Demo
     splash_window = Q2Splash()
     for x in range(10):
         splash_window.put(f"x {x} --")
         # time.sleep(0.2)
+    
     splash_window.put("__hide__")
     for x in range(10):
         splash_window.put(f"y {x} --")
@@ -135,5 +137,5 @@ if __name__ == "__main__":
         splash_window.put(f"z {x} --")
         # time.sleep(0.2)
     time.sleep(5)
-    splash_window.put(None)
+    splash_window.close()
     print("done")

@@ -118,23 +118,27 @@ class launcher:
         return True
 
     def activate_virtualenv(self):
-        self.splash_window.put("Activating virtualenv...")
-        if "win32" in sys.platform:
-            self.t.run(f"{self.q2rad_folder}/scripts/activate")
-        else:
-            self.t.run(f"source {self.q2rad_folder}/bin/activate")
+        try_to_create = True
+        while True:
+            if self.splash_window:
+                self.splash_window.put("Activating virtualenv...")
+            if "win32" in sys.platform:
+                self.t.run(f"{self.q2rad_folder}/scripts/activate")
+            else:
+                self.t.run(f"source {self.q2rad_folder}/bin/activate")
+            if self.t.exit_code != 0 and try_to_create:
+                if self.create_virtualenv():
+                    try_to_create = False
+                    continue
+                else:
+                    return False
+            else:
+                break
+        return True
 
-        if self.t.exit_code != 0:
-            self.splash_window.put("Creating virtualenv...")
-            # self.t.run("pwd")
-            self.t.run(f"{self.python} -m virtualenv q2rad")
-        else:
-            return True
-
-        if "win32" in sys.platform:
-            self.t.run(f"{self.q2rad_folder}/scripts/activate")
-        else:
-            self.t.run(f"source {self.q2rad_folder}/bin/activate")
+    def create_virtualenv(self):
+        self.splash_window.put("Creating virtualenv...")
+        self.t.run(f"{self.python} -m virtualenv q2rad")
         if self.t.exit_code != 0:
             return False
         return True
