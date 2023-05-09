@@ -31,7 +31,7 @@ class launcher:
         if self.run_q2rad_python():
             self.exit(0)
 
-        self.splash_window = Q2Splash()
+        self.splash_window = Q2Splash(width="50%", height="50%")
 
         self.t = Q2Terminal(callback=self.terminal_callback)
 
@@ -69,7 +69,7 @@ class launcher:
             self.splash_window.put("__show__")
 
     def terminal_callback(self, text):
-        if text == "True":
+        if text in ["True", "False"]:
             return
         self.splash_window.put(text)
 
