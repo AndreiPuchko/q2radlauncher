@@ -6,21 +6,45 @@ import queue
 import threading
 
 
-class Q2SplashGui:
-    def __init__(self, q: queue.Queue, max=None, width=None, height=None):
+class Q2Worker(threading.Thread):
+    def __init__(self, worker, splash):
+        super().__init__()
+        self.worker = worker
+        self.splash = splash
+
+    def run(self):
+        self.worker(self.splash)
+
+
+class Q2Splash:
+    def __init__(
+        self,
+        q: queue.Queue = queue.Queue(),
+        max=None,
+        width=None,
+        height=None,
+        worker=None,
+    ):
+        if worker is None:
+            return
         self.q = q
         self.max = max
+        self.timeout = 0
+        self.timeout_startpoint = 0
 
         self.root = tk.Tk()
         self.root.withdraw()
 
-        self.after_interval = 10
+        self.after_interval = 100
         self.splash_screen = tk.Toplevel()
         self.splash_screen.overrideredirect(True)
         self.splash_screen.title("Splash Screen")
         width, height, x, y = self.centerWindow(width, height)
         self.splash_screen.geometry(f"{width}x{height}+{x}+{y}")
 
+        # print(threading.Timer(1, lambda: worker(self)).start())
+        self.worker = Q2Worker(worker, self)
+        self.worker.start()
         self.create_gui()
         self.splash_screen.mainloop()
 
@@ -46,18 +70,23 @@ class Q2SplashGui:
         self.splash_screen.after(self.after_interval, self.auto_step)
 
     def auto_step(self):
+        if self.timeout:
+            if time.time() - self.timeout_startpoint > self.timeout:
+                self.hide()
+                self.set_timeout(0)
         self.step()
-        task = self.q.get()
-        if task is None:
-            self.root.destroy()
-        elif task == "":
-            pass
-        elif task == "__hide__":
-            self.splash_screen.withdraw()
-        elif task == "__show__":
-            self.splash_screen.deiconify()
-        else:
-            self.set_text(task)
+        if self.q.qsize() > 0:
+            task = self.q.get()
+            if task is None:
+                self.root.destroy()
+            elif task == "":
+                pass
+            elif task == "__hide__":
+                self.splash_screen.withdraw()
+            elif task == "__show__":
+                self.splash_screen.deiconify()
+            else:
+                self.set_text(task)
         self.splash_screen.after(self.after_interval, self.auto_step)
 
     def step(self):
@@ -93,68 +122,49 @@ class Q2SplashGui:
             if width.endswith("%"):
                 width = int(screen_width / 100 * int(width[:-1]))
             else:
-                width=int(width)
+                width = int(width)
         return width
+
+    def set_timeout(self, timeout):
+        self.timeout = timeout
+        self.timeout_startpoint = time.time()
+
+    def put(self, data):
+        self.q.put(data)
 
     def update(self):
         self.root.update()
 
     def close(self):
-        self.splash_screen.destroy()
-
-
-class Q2Splash(threading.Thread):
-    class RepeatTimer(threading.Timer):
-        def run(self):
-            while not self.finished.wait(self.interval):
-                self.function(*self.args, **self.kwargs)
-
-    def __init__(self, width=None, height=None):
-        super().__init__()
-        self.queue = queue.Queue()
-        print(width)
-        self.width = width
-        self.height = height
-        self.splash = None
-        self.timer = self.RepeatTimer(interval=0.05, function=self.timer_tick)
-        self.timer.start()
-        self.start()
-
-    def put(self, data):
-        self.queue.put(data)
-        if data is None:
-            self.timer.cancel()
-
-    def timer_tick(self):
-        if self.queue.qsize() == 0:
-            self.put("")
-        if self.splash:
-            self.splash.auto_step()
-
-    def run(self):
-        print(self.width)
-        self.splash = Q2SplashGui(self.queue, width=self.width, height=self.height)
-
-    def close(self):
         self.put(None)
+
+    def hide(self):
+        self.put("__hide__")
+
+    def show(self):
+        self.put("__show__")
 
 
 if __name__ == "__main__":
+
+    def worker(splash_window: Q2Splash):
+        splash_window.set_timeout(5)
+        for x in range(10):
+            splash_window.put(f"x {x} --")
+            time.sleep(1)
+        # splash_window.put(None)
+        splash_window.hide()
+        for x in range(10):
+            splash_window.put(f"y {x} --")
+            # time.sleep(0.2)
+
+        splash_window.show()
+        for x in range(10):
+            splash_window.put(f"z {x} --")
+            # time.sleep(0.2)
+        time.sleep(2)
+        splash_window.close()
+        print("done")
+
     # Demo
-    splash_window = Q2Splash(width="50%", height="50%")
-    for x in range(10):
-        splash_window.put(f"x {x} --")
-        # time.sleep(0.2)
-
-    splash_window.put("__hide__")
-    for x in range(10):
-        splash_window.put(f"y {x} --")
-        # time.sleep(0.2)
-
-    splash_window.put("__show__")
-    for x in range(10):
-        splash_window.put(f"z {x} --")
-        # time.sleep(0.2)
-    time.sleep(2)
-    splash_window.close()
-    print("done")
+    splash_window = Q2Splash(width="50%", height="50%", worker=worker)

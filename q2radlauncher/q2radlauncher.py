@@ -18,20 +18,19 @@ def mess(text):
 
 
 class launcher:
-    def __init__(self):
+    def __init__(self, splash_window: Q2Splash):
         if "win32" in sys.platform:
             self.python = "py"
         else:
             self.python = "python3"
         self.q2rad_folder = "q2rad"
-        self.splash_window = None
+        self.splash_window = splash_window
 
+        self.splash_window.put("Trying to start q2rad...")
         if self.run_q2rad_executable():
             self.exit(0)
         if self.run_q2rad_python():
             self.exit(0)
-
-        self.splash_window = Q2Splash(width="50%", height="50%")
 
         self.t = Q2Terminal(callback=self.terminal_callback)
 
@@ -53,7 +52,7 @@ class launcher:
             self.install_q2rad()
             if not self.run_q2rad():
                 self.exit(6)
-        self.splash_window.put(None)
+        self.splash_window.close()
 
     def exit(self, exit_code):
         if self.splash_window:
@@ -62,11 +61,11 @@ class launcher:
 
     def hide_splash(self):
         if self.splash_window:
-            self.splash_window.put("__hide__")
+            self.splash_window.hide()
 
     def show_splash(self):
         if self.splash_window:
-            self.splash_window.put("__show__")
+            self.splash_window.show()
 
     def terminal_callback(self, text):
         if text in ["True", "False"]:
@@ -76,7 +75,12 @@ class launcher:
     def check_python(self):
         self.splash_window.put("Checking python version...")
         python_version = (
-            self.t.run(f"{self.python} --version")[0].lower().replace("python ", "")
+            self.t.run(f"{self.python} --version")[0]
+            .lower()
+            .replace(
+                "python ",
+                "",
+            )
         )
 
         if self.t.exit_code != 0:
@@ -159,6 +163,7 @@ class launcher:
         return True
 
     def run_q2rad_executable(self):
+        self.splash_window.set_timeout(10)
         t = Q2Terminal()
         t.run(f"cd {self.q2rad_folder}")
         if t.exit_code != 0:
@@ -183,4 +188,8 @@ class launcher:
         return False
 
 
-launcher()
+def worker(splash_window):
+    launcher(splash_window)
+
+
+splash_window = Q2Splash(width="75%", height="50%", worker=worker)
