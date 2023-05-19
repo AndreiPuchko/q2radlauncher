@@ -26,12 +26,13 @@ class launcher:
         self.q2rad_folder = "q2rad"
         self.splash_window = None
 
+        self.splash_window = Q2Splash(width="50%", height="50%")
+
         if self.run_q2rad_executable():
             self.exit(0)
         if self.run_q2rad_python():
             self.exit(0)
-
-        self.splash_window = Q2Splash(width="50%", height="50%")
+        self.splash_window.put("q2rad did not start...")
 
         self.t = Q2Terminal(callback=self.terminal_callback)
 
@@ -89,6 +90,7 @@ class launcher:
         return True
 
     def check_folder(self):
+        self.splash_window.put("Checking folder...")
         if not os.path.isdir(self.q2rad_folder):
             os.mkdir(self.q2rad_folder)
 
@@ -152,27 +154,35 @@ class launcher:
         return True
 
     def run_q2rad(self):
-        self.hide_splash()
+        # self.hide_splash()
+        self.splash_window.set_timeout(10)
         self.t.run(f"{self.python} -m q2rad")
+        self.splash_window.set_timeout(0)
         if self.t.exit_code != 0:
             return False
         return True
 
     def run_q2rad_executable(self):
+        self.splash_window.put("Starting q2rad executable...")
         t = Q2Terminal()
         t.run(f"cd {self.q2rad_folder}")
+
         if t.exit_code != 0:
             return False
+
+        self.splash_window.set_timeout(10)
 
         if "win32" in sys.platform:
             t.run(f"{self.q2rad_folder}/scripts/q2rad")
         else:
             t.run(f"source {self.q2rad_folder}/bin/q2rad")
         if t.exit_code != 0:
+            self.splash_window.set_timeout(0)
             return False
         return True
 
     def run_q2rad_python(self):
+        self.splash_window.put("Starting q2rad package...")
         self.t = Q2Terminal()
         self.t.run(f"cd {self.q2rad_folder}")
         if self.t.exit_code != 0:
