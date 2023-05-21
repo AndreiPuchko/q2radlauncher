@@ -3,6 +3,7 @@ import sys
 import os
 from packaging import version
 from tkinter import messagebox
+import time
 
 from q2splash import Q2Splash
 
@@ -23,7 +24,7 @@ class launcher:
             self.python = "py"
         else:
             self.python = "python3"
-        self.q2rad_folder = "q2rad"
+        self.q2rad_folder = "./q2rad"
         self.splash_window = None
 
         self.splash_window = Q2Splash(width="50%", height="50%")
@@ -70,7 +71,7 @@ class launcher:
             self.splash_window.put("__show__")
 
     def terminal_callback(self, text):
-        if text in ["True", "False"]:
+        if text in ["True", "False", "0", "1"]:
             return
         self.splash_window.put(text)
 
@@ -175,7 +176,7 @@ class launcher:
         if "win32" in sys.platform:
             t.run(f"{self.q2rad_folder}/scripts/q2rad")
         else:
-            t.run(f"source {self.q2rad_folder}/bin/q2rad")
+            t.run(f"./{self.q2rad_folder}/bin/q2rad")
         if t.exit_code != 0:
             self.splash_window.set_timeout(0)
             return False

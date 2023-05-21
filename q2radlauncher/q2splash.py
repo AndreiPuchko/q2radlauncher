@@ -1,4 +1,5 @@
 import sys
+import os
 import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
 from tkinter.ttk import Progressbar
@@ -120,6 +121,7 @@ class Q2Splash(threading.Thread):
         self.timer = self.RepeatTimer(interval=0.1, function=self.timer_tick)
         self.timeout = 0
         self.timepoint = 0
+        self.timestart = time.time()
         self.timer.start()
         self.start()
 
@@ -139,6 +141,8 @@ class Q2Splash(threading.Thread):
         self.timepoint = time.time()
 
     def timer_tick(self):
+        if os.path.getmtime(f"./q2rad/log/q2.log") > self.timestart:
+            self.put(None)
         if self.timeout:
             if time.time() - self.timepoint > self.timeout:
                 self.put(None)
