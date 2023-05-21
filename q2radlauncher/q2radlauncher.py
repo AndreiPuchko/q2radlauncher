@@ -3,8 +3,6 @@ import sys
 import os
 from packaging import version
 from tkinter import messagebox
-import time
-
 from q2splash import Q2Splash
 
 

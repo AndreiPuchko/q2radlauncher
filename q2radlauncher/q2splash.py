@@ -141,7 +141,10 @@ class Q2Splash(threading.Thread):
         self.timepoint = time.time()
 
     def timer_tick(self):
-        if os.path.getmtime(f"./q2rad/log/q2.log") > self.timestart:
+        if (
+            os.path.isfile("./q2rad/log/q2.log")
+            and os.path.getmtime("./q2rad/log/q2.log") > self.timestart
+        ):
             self.put(None)
         if self.timeout:
             if time.time() - self.timepoint > self.timeout:

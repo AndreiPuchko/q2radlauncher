@@ -1,1 +1,1 @@
-pyinstaller --onefile --noconsole  .\q2radlauncher\q2radlauncher.py
+pyinstaller --onefile --noconsole --icon=q2rad.ico .\q2radlauncher\q2radlauncher.py 
