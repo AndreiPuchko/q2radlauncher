@@ -19,7 +19,8 @@ class Q2SplashGui:
         self.after_interval = 10
         self.splash_screen = tk.Toplevel()
         self.splash_screen.overrideredirect(True)
-        self.splash_screen.title("Splash Screen")
+        self.splash_screen.title("q2rad launcher")
+        self.splash_screen.iconbitmap("q2rad.ico")
         width, height, x, y = self.centerWindow(width, height)
         self.splash_screen.geometry(f"{width}x{height}+{x}+{y}")
 
@@ -168,14 +169,15 @@ if __name__ == "__main__":
     splash_window.put("111")
     for x in range(10):
         splash_window.put(f"x {x} --")
-        time.sleep(1)
-    splash_window.set_timeout()
-    splash_window.hide()
-    for x in range(10):
-        splash_window.put(f"y {x} --")
         time.sleep(0.2)
+    splash_window.set_timeout()
 
-    splash_window.show()
+    # splash_window.hide()
+    # for x in range(10):
+    #     splash_window.put(f"y {x} --")
+    #     time.sleep(0.2)
+    # splash_window.show()
+
     for x in range(10):
         splash_window.put(f"z {x} --")
         time.sleep(0.2)

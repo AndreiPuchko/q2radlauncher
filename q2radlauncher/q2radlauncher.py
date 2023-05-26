@@ -80,10 +80,12 @@ class launcher:
         )
 
         if self.t.exit_code != 0:
+            self.splash_window.hide()
             mess("Python was not found, go to www.python.org")
             return False
 
         if version.parse(python_version) < version.parse("3.8.1"):
+            self.splash_window.hide()
             mess("Python version must be at least 3.8.1")
             return False
         return True
@@ -94,6 +96,7 @@ class launcher:
             os.mkdir(self.q2rad_folder)
 
         if not os.path.isdir(self.q2rad_folder):
+            self.splash_window.hide()
             mess("Can not create folder: q2rad")
             return False
         return True
@@ -102,7 +105,7 @@ class launcher:
         self.splash_window.put("Checking pip")
         self.t.run(f"{self.python} -m pip --version")
         if self.t.exit_code != 0:
-            mess("install pip")
+            self.splash_window.put("install pip")
             return False
         return True
 
@@ -114,6 +117,7 @@ class launcher:
             self.t.run(f"{self.python} -m pip install --upgrade virtualenv")
             # self.t.run(f"{self.python} -m virtualenv --version")
             if self.t.exit_code != 0:
+                self.splash_window.hide()
                 mess("Can not install virtualenv")
                 return False
         return True
