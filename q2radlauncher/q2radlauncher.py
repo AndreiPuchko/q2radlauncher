@@ -45,7 +45,7 @@ class launcher:
             f"{self.python} _tmp.py"
         )
         self.remove_temp_file()
-        
+
         # gp = urllib.request.urlopen("https://raw.githubusercontent.com/AndreiPuchko/q2rad/main/install/get-q2rad.py").read()
         gp = open(r"C:\Users\andre\Desktop\dev\q2\q2rad\install\get-q2rad.py").read()
         # with redirect_stdout(q2file(callback=self.terminal_callback)):
