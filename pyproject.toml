@@ -15,7 +15,6 @@ pytest = "^7.3.1"
 flake8 = "^6.0.0"
 black = "^23.3.0"
 pyinstaller = "^5.10.1"
-q2terminal = { path = "../q2terminal/", develop = true }
 
 
 [build-system]
