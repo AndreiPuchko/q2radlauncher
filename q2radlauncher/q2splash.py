@@ -55,8 +55,7 @@ class Q2Splash:
         self.splash_screen.overrideredirect(True)
         self.splash_screen.title("q2rad launcher")
         # self.splash_screen.iconbitmap("q2rad.ico")
-        width, height, x, y = self.centerWindow(width, height)
-        self.splash_screen.geometry(f"{width}x{height}+{x}+{y}")
+        self.centerWindow(width, height)
 
         self.worker = Q2Worker(worker, self)
         self.worker.start()
@@ -152,14 +151,15 @@ class Q2Splash:
         screen_width = self.root.winfo_screenwidth()  # Width of the screen
         screen_height = self.root.winfo_screenheight()  # Height of the screen
         if width is None:
-            width = screen_width / 4
+            width = screen_width // 4
         if height is None:
-            height = screen_height / 3
+            height = screen_height // 3
         width = self.prep_size(width, screen_width)
         height = self.prep_size(height, screen_height)
-        x = (screen_width / 2) - (width / 2)
-        y = (screen_height / 2) - (height / 2)
-        return int(width), int(height), int(x), int(y)
+        x = (screen_width // 2) - (width // 2)
+        y = (screen_height // 2) - (height // 2)
+        self.splash_screen.geometry(f"{width}x{height}+{x}+{y}")
+        # return int(width), int(height), int(x), int(y)
 
     def prep_size(self, width, screen_width):
         if isinstance(width, str):

@@ -18,7 +18,7 @@ def mess(text):
 
 
 class launcher:
-    def __init__(self, splash=None):
+    def __init__(self, splash: Q2Splash = None):
         if "win32" in sys.platform:
             self.python = "py"
         else:
@@ -31,13 +31,17 @@ class launcher:
             self.exit(0)
         if self.run_q2rad_python():
             self.exit(0)
+        self.splash.centerWindow("70%", "50%")
         self.put("q2rad did not start...")
 
         self.t = Q2Terminal(callback=self.terminal_callback)
         self.put("Downloading get-q2rad.py...")
         # gp = open(r"C:\Users\andre\Desktop\dev\q2\q2rad\install\get-q2rad.py").read()
         # gp = urllib.request.urlopen("https://raw.githubusercontent.com/AndreiPuchko/q2rad/main/install/get-q2rad.py").read()
-        urllib.request.urlretrieve("https://raw.githubusercontent.com/AndreiPuchko/q2rad/main/install/get-q2rad.py",'_tmp.py') 
+        urllib.request.urlretrieve(
+            "https://raw.githubusercontent.com/AndreiPuchko/q2rad/main/install/get-q2rad.py",
+            "_tmp.py",
+        )
         # open("_tmp.py", "w").write(gp)
 
         self.t.run(
@@ -45,7 +49,7 @@ class launcher:
             f"{self.python} _tmp.py"
         )
         self.remove_temp_file()
-        
+
         # gp = urllib.request.urlopen("https://raw.githubusercontent.com/AndreiPuchko/q2rad/main/install/get-q2rad.py").read()
         gp = open(r"C:\Users\andre\Desktop\dev\q2\q2rad\install\get-q2rad.py").read()
         # with redirect_stdout(q2file(callback=self.terminal_callback)):
@@ -188,4 +192,4 @@ def worker(splash):
     launcher(splash)
 
 
-Q2Splash(worker=worker, width="70%", height="50%")
+Q2Splash(worker=worker, width="15%", height="15%")
