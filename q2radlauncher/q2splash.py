@@ -194,7 +194,7 @@ if __name__ == "__main__":
     def worker(splash):
         # splash_window = Q2Splash(width="50%", height="50%")
         splash.set_timeout(5)
-        splash.put("111")
+        splash.put(RED+" 111 " + RESET)
         for x in range(10):
             splash.put(f"x {x} --")
             time.sleep(1)

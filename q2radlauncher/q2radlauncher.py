@@ -3,7 +3,7 @@ import sys
 import os
 from packaging import version
 from tkinter import messagebox
-from q2splash import Q2Splash
+from q2splash import Q2Splash, GREEN, RED
 import urllib.request
 
 
@@ -23,19 +23,25 @@ class launcher:
             self.python = "py"
         else:
             self.python = "python3"
+            if "win32" in sys.platform:
+                path = sys.argv[0].split("/Contents/MacOS")[0]
+                path = os.path.dirname(path)
+                os.chdir(path)
+
         self.q2rad_folder = "./q2rad"
         self.splash = splash
         self.remove_temp_file()
 
+        self.put(GREEN + "Starting q2rad...")
         if self.run_q2rad_executable():
             self.exit(0)
         if self.run_q2rad_python():
             self.exit(0)
         self.splash.centerWindow("70%", "50%")
-        self.put("q2rad did not start...")
+        self.put(RED + "q2rad did not start...")
 
         self.t = Q2Terminal(callback=self.terminal_callback)
-        self.put("Downloading get-q2rad.py...")
+        self.put(GREEN + "Downloading get-q2rad.py...")
         # gp = open(r"C:\Users\andre\Desktop\dev\q2\q2rad\install\get-q2rad.py").read()
         # gp = urllib.request.urlopen("https://raw.githubusercontent.com/AndreiPuchko/q2rad/main/install/get-q2rad.py").read()
         urllib.request.urlretrieve(
