@@ -15,6 +15,7 @@ pytest = "^7.3.1"
 flake8 = "^6.0.0"
 black = "^23.3.0"
 pyinstaller = "^5.10.1"
+pillow = "^9.5.0"
 
 
 [build-system]

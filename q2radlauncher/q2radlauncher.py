@@ -5,6 +5,7 @@ from packaging import version
 from tkinter import messagebox
 from q2splash import Q2Splash, GREEN, RED
 import urllib.request
+import logging
 
 
 messagebox_title = "q2rad launcher"
@@ -15,6 +16,14 @@ def mess(text):
         messagebox_title,
         text,
     )
+
+
+logging.basicConfig(
+    filename="q2launcher.log",
+    encoding="utf-8",
+    level=logging.DEBUG,
+    format="[%(asctime)s] - %(message)s",
+)
 
 
 class launcher:
@@ -42,25 +51,14 @@ class launcher:
 
         self.t = Q2Terminal(callback=self.terminal_callback)
         self.put(GREEN + "Downloading get-q2rad.py...")
-        # gp = open(r"C:\Users\andre\Desktop\dev\q2\q2rad\install\get-q2rad.py").read()
-        # gp = urllib.request.urlopen("https://raw.githubusercontent.com/AndreiPuchko/q2rad/main/install/get-q2rad.py").read()
         urllib.request.urlretrieve(
             "https://raw.githubusercontent.com/AndreiPuchko/q2rad/main/install/get-q2rad.py",
             "_tmp.py",
         )
-        # open("_tmp.py", "w").write(gp)
 
-        self.t.run(
-            # f"curl https://raw.githubusercontent.com/AndreiPuchko/q2rad/main/install/get-q2rad.py | {self.python} -"
-            f"{self.python} _tmp.py"
-        )
+        self.t.run(f"{self.python} _tmp.py")
         self.remove_temp_file()
 
-        # gp = urllib.request.urlopen("https://raw.githubusercontent.com/AndreiPuchko/q2rad/main/install/get-q2rad.py").read()
-        gp = open(r"C:\Users\andre\Desktop\dev\q2\q2rad\install\get-q2rad.py").read()
-        # with redirect_stdout(q2file(callback=self.terminal_callback)):
-        #     print(123)
-        #     exec(str(gp), globals(), locals())
         self.exit()
 
     def remove_temp_file(self):

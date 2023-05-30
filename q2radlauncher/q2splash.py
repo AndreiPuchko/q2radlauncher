@@ -1,21 +1,14 @@
-from collections.abc import Callable, Iterable, Mapping
 import sys
 import os
 import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
 from tkinter.ttk import Progressbar
+
 import time
 import queue
 import threading
 import re
 import logging
-
-logging.basicConfig(
-    filename="q2launcher.log",
-    encoding="utf-8",
-    level=logging.DEBUG,
-    format="[%(asctime)s] {%(pathname)s:%(lineno)d} %(levelname)s - %(message)s",
-)
 
 ansi_escape = re.compile(r"\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])")
 RED = "\x1b[38;5;1m"
@@ -38,6 +31,21 @@ class Q2Worker(threading.Thread):
         self.worker(self.splash)
 
 
+logo_png = (
+    "iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAAAAAAeW/F+AAAAIGNIUk0AAHomAACAhAAA+"
+    "gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAACYktHRAD/h4/MvwAAAAd0SU1FB+cFHg"
+    "sGB3vY84IAAAEdSURBVCjPpdOxSgNBEAbgPwaDIVh4QTDaXLQR7h0CWlncO9iovSDmHYT"
+    "4Aq4kDyBWuUZrD8ReJBZ6tqISk4OQcK7Fzc7m5owITjd8sPyzs1vQ+K3m8Fee3I/yrk0l"
+    "7XprrEUxJ50qFk/HMzjpVIG8Y1rzjozmPOULh6NWziZ9y+lgtRXm5dX2bk8OFnrUul3lY"
+    "Lsnk5O7XeUA1nnu0APgBudpCuP21kIP9UCZjOSW9c1OoJY409ajTQ4AWFuvPQ+4e/nIri"
+    "Ty0bg7mifduM4eHvmAdVLmyAesGzVMSs5K/ORzpMbt4eaVWIlaYC6e9B++BA+bJaN7bz8"
+    "8h5hcKCdPXaqdO26WUNwXOnXn8XH54F3PZP15+SpVF/71x74B2VDrDoJd9WMAAAAldEVY"
+    "dGRhdGU6Y3JlYXRlADIwMjMtMDUtMzBUMTE6MDY6MDcrMDA6MDDQ1Gu2AAAAJXRFWHRkY"
+    "XRlOm1vZGlmeQAyMDIzLTA1LTMwVDExOjA2OjA3KzAwOjAwoYnTCgAAACh0RVh0ZGF0ZT"
+    "p0aW1lc3RhbXAAMjAyMy0wNS0zMFQxMTowNjowNyswMDowMPac8tUAAAAASUVORK5CYII="
+)
+
+
 class Q2Splash:
     def __init__(
         self, queue=queue.Queue(), max=None, width=None, height=None, worker=None
@@ -54,22 +62,34 @@ class Q2Splash:
         self.splash_screen = tk.Toplevel()
         self.splash_screen.overrideredirect(True)
         self.splash_screen.title("q2rad launcher")
-        # self.splash_screen.iconbitmap("q2rad.ico")
         self.centerWindow(width, height)
 
+        self.create_gui()
         self.worker = Q2Worker(worker, self)
-        self.worker.start()
         self.timeout = 0
         self.timestart = time.time()
-        self.create_gui()
+        self.worker.start()
         self.splash_screen.mainloop()
 
     def create_gui(self):
-        self.pb_frame = tk.Frame(self.splash_screen)
-        self.pb_frame.pack()
+        self.title_frame = tk.Frame(self.splash_screen)
 
-        self.label = tk.Label(self.pb_frame, text="")
-        self.label.pack(fill=tk.X, side=tk.RIGHT)
+        im = tk.PhotoImage(data=logo_png)
+        self.icon = tk.Label(self.title_frame, image=im, text="")
+        self.icon.image = im
+        self.icon.pack(side="left")
+
+        self.title = tk.Label(self.title_frame, text="q2rad launcher", font=("", 20))
+        self.title.pack(anchor=tk.S, side="left", fill=tk.BOTH)
+
+        self.title_frame.pack(side="top", fill="x", expand="no")
+
+        self.progress_stage = tk.Label(self.splash_screen, text="", font=("", 14))
+        self.progress_stage.pack(anchor=tk.W, side="top")
+
+        self.pb_frame = tk.Frame(self.splash_screen)
+        self.progress_label = tk.Label(self.pb_frame, text="")
+        self.progress_label.pack(fill=tk.X, side=tk.RIGHT)
 
         self.progressbar = Progressbar(
             self.pb_frame,
@@ -80,21 +100,25 @@ class Q2Splash:
         )
         self.progressbar.pack(side=tk.LEFT, expand=True, padx=5, pady=5)
 
+        self.pb_frame.pack(side="top")
+
         self.stdoutput = ScrolledText(self.splash_screen)
         self.stdoutput.config(state=tk.DISABLED)
         self.stdoutput.tag_config("red", foreground="red")
         self.stdoutput.tag_config("red", foreground="red")
         self.stdoutput.tag_config("green", foreground="green")
         self.stdoutput.tag_config("yellow", foreground="yellow")
+
         self.current_color = None
         self.stdoutput.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+
         self.splash_screen.after(self.after_interval, self.auto_step)
+        self.starttime = time.time()
 
     def auto_step(self):
         if os.path.isfile("./q2rad/log/q2.log"):
             if os.path.getmtime("./q2rad/log/q2.log") > self.timestart:
                 self.put(None)
-
         if self.timeout:
             if time.time() - self.timeout_startpoint > self.timeout:
                 self.hide()
@@ -122,13 +146,13 @@ class Q2Splash:
         self.progressbar.step()
         pb_value = int(self.progressbar["value"])
         if self.max is None:
-            self.label.config(text=f"{pb_value/10}")
+            tm = round((time.time() - self.starttime), 2)
+            self.progress_label.config(text=f"{tm:0.2f}")
         else:
-            self.label.config(text=f"{pb_value}%")
+            self.progress_label.config(text=f"{pb_value}%")
         self.root.update()
 
     def set_text(self, text):
-        # color = self.current_color
         if ansi_escape.match(text):
             self.current_color = color_tags.get(ansi_escape.match(text)[0])
         else:
@@ -137,6 +161,9 @@ class Q2Splash:
 
         if chr(13) in text:
             text = text.split(chr(13))[-1]
+
+        if self.current_color:
+            self.progress_stage.config(text=text)
 
         if text.strip() == "":
             return
@@ -159,7 +186,6 @@ class Q2Splash:
         x = (screen_width // 2) - (width // 2)
         y = (screen_height // 2) - (height // 2)
         self.splash_screen.geometry(f"{width}x{height}+{x}+{y}")
-        # return int(width), int(height), int(x), int(y)
 
     def prep_size(self, width, screen_width):
         if isinstance(width, str):
@@ -191,14 +217,17 @@ class Q2Splash:
 
 if __name__ == "__main__":
     # Demo
-    def worker(splash):
-        # splash_window = Q2Splash(width="50%", height="50%")
+    def worker(splash: Q2Splash):
         splash.set_timeout(5)
-        splash.put(RED+" 111 " + RESET)
+        splash.put(RED + " 111 " + RESET)
+        t = time.time()
+        print(t)
         for x in range(10):
             splash.put(f"x {x} --")
             time.sleep(1)
+            print(time.time() - t, splash.timeout)
         splash.set_timeout()
+        print(time.time() - t)
 
         splash.hide()
         for x in range(10):
@@ -213,4 +242,4 @@ if __name__ == "__main__":
         splash.close()
         print("done")
 
-    Q2Splash(worker=worker, width="60%")
+    Q2Splash(worker=worker)

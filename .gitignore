@@ -1,6 +1,7 @@
 q2rad
 dist
 build
+*.log
 q2radlauncher/__pycache__/
 q2radlauncher.spec
 q2splash.cpython-311.pyc
