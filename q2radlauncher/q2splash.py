@@ -122,8 +122,10 @@ class Q2Splash:
         if self.timeout:
             if time.time() - self.timeout_startpoint > self.timeout:
                 self.hide()
+                self.root.update()
                 self.set_timeout()
                 self.root.destroy()
+                self.root.update()
                 sys.exit(0)
 
         self.step()

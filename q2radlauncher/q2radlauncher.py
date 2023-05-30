@@ -8,6 +8,12 @@ import urllib.request
 import logging
 
 
+if "darwin" in sys.platform:
+    path = sys.argv[0].split("/Contents/MacOS")[0]
+    path = os.path.dirname(path)
+    os.chdir(path)
+
+
 messagebox_title = "q2rad launcher"
 
 
@@ -32,10 +38,6 @@ class launcher:
             self.python = "py"
         else:
             self.python = "python3"
-            if "win32" in sys.platform:
-                path = sys.argv[0].split("/Contents/MacOS")[0]
-                path = os.path.dirname(path)
-                os.chdir(path)
 
         self.q2rad_folder = "./q2rad"
         self.splash = splash
