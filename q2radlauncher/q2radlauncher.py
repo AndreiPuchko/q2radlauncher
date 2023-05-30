@@ -3,9 +3,11 @@ import sys
 import os
 from packaging import version
 from tkinter import messagebox
-from q2splash import Q2Splash, GREEN, RED
+from q2splash import Q2Splash, GREEN, RED, RESET
+import subprocess
 import urllib.request
 import logging
+import time
 
 
 if "darwin" in sys.platform:
@@ -13,6 +15,7 @@ if "darwin" in sys.platform:
     path = os.path.dirname(path)
     os.chdir(path)
 
+start_dir = os.path.abspath(".")
 
 messagebox_title = "q2rad launcher"
 
@@ -22,6 +25,27 @@ def mess(text):
         messagebox_title,
         text,
     )
+
+
+def run_q2rad():
+    t = Q2Terminal()
+    t.run(f"{py3bin} --version")
+    if int(t.exit_code) == 0:
+        os.chdir("q2rad")
+        try:
+            if "win32" not in sys.platform:
+                os.execv(py3bin, [py3bin, "-c", code_string])
+            else:
+                subprocess.Popen(
+                    ["powershell", f'&"{py3bin}w"', "-c", f'"{code_string}"'],
+                    start_new_session=True,
+                    creationflags=subprocess.CREATE_NO_WINDOW,
+                )
+            return True
+        except Exception as e:
+            os.chdir(start_dir)
+            print(e)
+    return False
 
 
 logging.basicConfig(
@@ -40,25 +64,38 @@ class launcher:
             self.python = "python3"
 
         self.q2rad_folder = "./q2rad"
+        self.bin_folder = "Scripts" if "win32" in sys.platform else "bin"
+        self.py3bin = os.path.abspath(
+            f"{self.q2rad_folder}/q2rad/{self.bin_folder}/python"
+        )
+
         self.splash = splash
         self.remove_temp_file()
+        self.t = Q2Terminal(callback=self.terminal_callback)
+        self.put(GREEN + "Starting q2rad..." + RESET)
 
-        self.put(GREEN + "Starting q2rad...")
-        if self.run_q2rad_executable():
-            self.exit(0)
-        if self.run_q2rad_python():
-            self.exit(0)
+        if run_q2rad():
+            self.exit()
+
+        # time.sleep(0.03)
+
         self.splash.centerWindow("70%", "50%")
         self.put(RED + "q2rad did not start...")
 
-        self.t = Q2Terminal(callback=self.terminal_callback)
-        self.put(GREEN + "Downloading get-q2rad.py...")
+        self.put(GREEN + "Checking python...")
+        time.sleep(0.5)
+        if self.check_python() == False:
+            self.splash.close()
+            sys.exit()
+
+        self.put(GREEN + "Installing q2rad...")
         urllib.request.urlretrieve(
             "https://raw.githubusercontent.com/AndreiPuchko/q2rad/main/install/get-q2rad.py",
             "_tmp.py",
         )
 
         self.t.run(f"{self.python} _tmp.py")
+        print("Done...")
         self.remove_temp_file()
 
         self.exit()
@@ -89,7 +126,7 @@ class launcher:
         self.put(text)
 
     def check_python(self):
-        self.put("Checking python version...")
+        self.put(GREEN + "Checking python version...")
         python_version = (
             self.t.run(f"{self.python} --version")[0].lower().replace("python ", "")
         )
@@ -105,97 +142,40 @@ class launcher:
             return False
         return True
 
-    def check_folder(self):
-        self.put("Checking folder...")
-        if not os.path.isdir(self.q2rad_folder):
-            os.mkdir(self.q2rad_folder)
-
-        if not os.path.isdir(self.q2rad_folder):
-            self.splash.hide()
-            mess("Can not create folder: q2rad")
-            return False
-        return True
-
-    def activate_virtualenv(self):
-        try_to_create = True
-        while True:
-            if self.splash:
-                self.put("Activating virtualenv...")
-            if "win32" in sys.platform:
-                self.t.run(f"{self.q2rad_folder}/scripts/activate")
-            else:
-                self.t.run(f"source {self.q2rad_folder}/bin/activate")
-            if self.t.exit_code != 0 and try_to_create:
-                if self.create_virtualenv():
-                    try_to_create = False
-                    continue
-                else:
-                    return False
-            else:
-                break
-        return True
-
-    def create_virtualenv(self):
-        self.put("Creating virtualenv...")
-        self.t.run(f"{self.python} -m virtualenv q2rad")
-        if self.t.exit_code != 0:
-            return False
-        return True
-
-    def install_q2rad(self):
-        self.show_splash()
-        self.put("Installing q2rad...")
-        self.t.run(f"{self.python} -m pip install --upgrade q2rad")
-        if self.t.exit_code != 0:
-            return False
-        return True
-
     def run_q2rad(self):
         # self.hide_splash()
         self.set_timeout(10)
-        self.t.run(f"{self.python} -m q2rad")
+        t = Q2Terminal(callback=self.terminal_callback)
+        t.run("cd q2rad")
+        code_string = "from q2rad.q2rad import main;main()"
+        t.run(f'{py3bin} -c "{code_string}"')
+        print(1111)
         self.set_timeout(0)
-        if self.t.exit_code != 0:
-            return False
-        return True
-
-    def run_q2rad_executable(self):
-        self.put("Starting q2rad executable...")
-        t = Q2Terminal()
-        t.run(f"cd {self.q2rad_folder}")
-
         if t.exit_code != 0:
             return False
-
-        self.set_timeout(10)
-
-        if "win32" in sys.platform:
-            t.run(f"{self.q2rad_folder}/scripts/q2rad")
-        else:
-            t.run(f"./{self.q2rad_folder}/bin/q2rad")
-        if t.exit_code != 0:
-            self.set_timeout(0)
-            return False
-        return True
-
-    def run_q2rad_python(self):
-        self.put("Starting q2rad package...")
-        self.t = Q2Terminal()
-        self.t.run(f"cd {self.q2rad_folder}")
-        if self.t.exit_code != 0:
-            return False
-        if self.activate_virtualenv():
-            if self.run_q2rad():
-                self.exit(0)
-        return False
+        self.exit()
 
     def set_timeout(self, timeout=0):
         if self.splash:
             self.splash.set_timeout(timeout)
 
 
+py3bin = os.path.abspath(
+    f"""q2rad/q2rad/{"Scripts" if "win32" in sys.platform else "bin"}/python"""
+)
+code_string = "from q2rad.q2rad import main;main()"
+
+# if run_q2rad():
+#     sys.exit()
+
+
 def worker(splash):
     launcher(splash)
 
 
-Q2Splash(worker=worker, width="15%", height="15%")
+if run_q2rad():
+    sys.exit(0)
+else:
+    Q2Splash(worker=worker, width="15%", height="15%")
+
+print("done")
