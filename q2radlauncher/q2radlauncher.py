@@ -19,6 +19,11 @@ start_dir = os.path.abspath(".")
 
 messagebox_title = "q2rad launcher"
 
+py3bin = os.path.abspath(
+    f"""q2rad/q2rad/{"Scripts" if "win32" in sys.platform else "bin"}/python"""
+)
+code_string = "from q2rad.q2rad import main;main()"
+
 
 def mess(text):
     messagebox.showerror(
@@ -28,23 +33,20 @@ def mess(text):
 
 
 def run_q2rad():
-    t = Q2Terminal()
-    t.run(f"{py3bin} --version")
-    if int(t.exit_code) == 0:
+    try:
         os.chdir("q2rad")
-        try:
-            if "win32" not in sys.platform:
-                os.execv(py3bin, [py3bin, "-c", code_string])
-            else:
-                subprocess.Popen(
-                    ["powershell", f'&"{py3bin}w"', "-c", f'"{code_string}"'],
-                    start_new_session=True,
-                    creationflags=subprocess.CREATE_NO_WINDOW,
-                )
-            return True
-        except Exception as e:
-            os.chdir(start_dir)
-            print(e)
+        if "win32" not in sys.platform:
+            os.execv(py3bin, [py3bin, "-c", code_string])
+        else:
+            subprocess.Popen(
+                ["powershell", f'&"{py3bin}w"', "-c", f'"{code_string}"'],
+                start_new_session=True,
+                creationflags=subprocess.CREATE_NO_WINDOW,
+            )
+        return True
+    except Exception as e:
+        print(e)
+        os.chdir(start_dir)
     return False
 
 
@@ -158,15 +160,6 @@ class launcher:
     def set_timeout(self, timeout=0):
         if self.splash:
             self.splash.set_timeout(timeout)
-
-
-py3bin = os.path.abspath(
-    f"""q2rad/q2rad/{"Scripts" if "win32" in sys.platform else "bin"}/python"""
-)
-code_string = "from q2rad.q2rad import main;main()"
-
-# if run_q2rad():
-#     sys.exit()
 
 
 def worker(splash):
