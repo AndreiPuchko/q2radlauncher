@@ -1,5 +1,5 @@
 pyinstaller --onefile --noconsole --icon=q2rad.ico --distpath ./bin/macos ./q2radlauncher/q2radlauncher.py
-rm bin/macos/q2radlauncher
+# rm bin/macos/q2radlauncher
 # create-dmg \
   # --volname "q2radlauncher Installer" \
   # --volicon "q2rad.ico" \
@@ -12,7 +12,7 @@ rm bin/macos/q2radlauncher
   # "bin/macos/q2radlauncher-Installer.dmg" \
   # "bin/macos"
  
-zip bin/macos/q2radlauncher-installer.zip bin/macos/q2radlauncher.app/
+#zip bin/macos/q2radlauncher-installer.zip bin/macos/q2radlauncher.app/
 
 # rm -r bin/macos/q2radlauncher.app 
 #rm -r bin/macos/rw.q2radlauncher.dmg
