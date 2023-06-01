@@ -118,6 +118,7 @@ class Q2Splash:
     def auto_step(self):
         if os.path.isfile("./q2rad/log/q2.log"):
             if os.path.getmtime("./q2rad/log/q2.log") > self.timestart:
+                self.hide()
                 self.root.update()
                 self.set_timeout()
                 self.root.destroy()
