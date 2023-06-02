@@ -119,7 +119,7 @@ class Q2Splash:
             self.error_button_frame, text="Close", command=self.error_button_click
         )
         self.error_button.pack(padx=5, pady=5)
-        self.show_error_button()
+        # self.show_error_button()
 
         self.splash_screen.after(self.after_interval, self.auto_step)
         self.starttime = time.time()
