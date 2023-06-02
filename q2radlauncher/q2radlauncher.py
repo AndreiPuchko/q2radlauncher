@@ -126,6 +126,8 @@ class launcher:
         if text in ["True", "False", "0", "1"]:
             return
         self.put(text)
+        if text.startswith("Failed to"):
+            self.splash.show_error_button()
 
     def check_python(self):
         self.put(GREEN + "Checking python version...")
@@ -144,18 +146,18 @@ class launcher:
             return False
         return True
 
-    def run_q2rad(self):
-        # self.hide_splash()
-        self.set_timeout(10)
-        t = Q2Terminal(callback=self.terminal_callback)
-        t.run("cd q2rad")
-        code_string = "from q2rad.q2rad import main;main()"
-        t.run(f'{py3bin} -c "{code_string}"')
-        print(1111)
-        self.set_timeout(0)
-        if t.exit_code != 0:
-            return False
-        self.exit()
+    # def run_q2rad(self):
+    #     # self.hide_splash()
+    #     self.set_timeout(10)
+    #     t = Q2Terminal(callback=self.terminal_callback)
+    #     t.run("cd q2rad")
+    #     code_string = "from q2rad.q2rad import main;main()"
+    #     t.run(f'{py3bin} -c "{code_string}"')
+    #     print(1111)
+    #     self.set_timeout(0)
+    #     if t.exit_code != 0:
+    #         return False
+    #     self.exit()
 
     def set_timeout(self, timeout=0):
         if self.splash:

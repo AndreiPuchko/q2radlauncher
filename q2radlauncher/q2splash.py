@@ -68,6 +68,8 @@ class Q2Splash:
         self.worker = Q2Worker(worker, self)
         self.timeout = 0
         self.timestart = time.time()
+        self.is_error = True
+        self.current_color = None
         self.worker.start()
         self.splash_screen.mainloop()
 
@@ -109,36 +111,36 @@ class Q2Splash:
         self.stdoutput.tag_config("green", foreground="green")
         self.stdoutput.tag_config("yellow", foreground="yellow")
 
-        self.current_color = None
-        self.stdoutput.pack(fill=tk.BOTH, expand=True, padx=5, pady=5)
+        self.stdoutput.pack(side="top", fill=tk.BOTH, expand=True, padx=5, pady=5)
+        self.stdoutput.pack_propagate(False)
+
+        self.error_button_frame = tk.Frame(self.splash_screen)
+        self.error_button = tk.Button(
+            self.error_button_frame, text="Close", command=self.error_button_click
+        )
+        self.error_button.pack(padx=5, pady=5)
+        self.show_error_button()
 
         self.splash_screen.after(self.after_interval, self.auto_step)
         self.starttime = time.time()
 
+    def show_error_button(self):
+        self.error_button_frame.pack(side="bottom", padx=5, pady=5)
+        self.root.update()
+
     def auto_step(self):
         if os.path.isfile("./q2rad/log/q2.log"):
             if os.path.getmtime("./q2rad/log/q2.log") > self.timestart:
-                self.hide()
-                self.root.update()
-                self.set_timeout()
-                self.root.destroy()
-                self.root.update()
-                sys.exit(0)
+                self.exit()
         if self.timeout:
             if time.time() - self.timeout_startpoint > self.timeout:
-                self.hide()
-                self.root.update()
-                self.set_timeout()
-                self.root.destroy()
-                self.root.update()
-                sys.exit(0)
+                self.exit()
 
         self.step()
         if self.queue.qsize() > 0:
             task = self.queue.get()
             if task is None:
-                self.root.destroy()
-                sys.exit(0)
+                self.exit()
             elif task == "":
                 pass
             elif task == "__hide__":
@@ -148,6 +150,20 @@ class Q2Splash:
             else:
                 self.set_text(task)
         self.splash_screen.after(self.after_interval, self.auto_step)
+
+    def error_button_click(self):
+        self.is_error = False
+        self.exit()
+
+    def exit(self):
+        if self.is_error:
+            pass
+        else:
+            self.hide()
+            self.root.update()
+            self.set_timeout()
+            self.root.destroy()
+            sys.exit(0)
 
     def step(self):
         self.progressbar.step()
@@ -225,27 +241,13 @@ class Q2Splash:
 if __name__ == "__main__":
     # Demo
     def worker(splash: Q2Splash):
-        splash.set_timeout(5)
         splash.put(RED + " 111 " + RESET)
         t = time.time()
-        print(t)
-        for x in range(10):
-            splash.put(f"x {x} --")
-            time.sleep(1)
-            print(time.time() - t, splash.timeout)
-        splash.set_timeout()
-        print(time.time() - t)
-
-        splash.hide()
-        for x in range(10):
-            splash.put(f"y {x} --")
-            time.sleep(0.2)
-        splash.show()
-
-        for x in range(10):
-            splash.put(f"z {x} --")
-            time.sleep(0.2)
-        time.sleep(2)
+        elapsed = lambda: time.time() - t
+        while elapsed() < 2:
+            splash.put(f"time {elapsed()} --")
+            time.sleep(0.1)
+        splash.show_error_button()
         splash.close()
         print("done")
 
