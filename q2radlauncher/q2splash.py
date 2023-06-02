@@ -68,7 +68,7 @@ class Q2Splash:
         self.worker = Q2Worker(worker, self)
         self.timeout = 0
         self.timestart = time.time()
-        self.is_error = True
+        self.is_error = False
         self.current_color = None
         self.worker.start()
         self.splash_screen.mainloop()
