@@ -126,7 +126,7 @@ class launcher:
         if text in ["True", "False", "0", "1"]:
             return
         self.put(text)
-        if text.startswith("Failed to"):
+        if "Failed to" in text:
             self.splash.show_error_button()
 
     def check_python(self):
