@@ -8,6 +8,7 @@ import subprocess
 import urllib.request
 import logging
 import time
+import webbrowser
 
 
 if "darwin" in sys.platform:
@@ -79,8 +80,6 @@ class launcher:
         if run_q2rad():
             self.exit()
 
-        # time.sleep(0.03)
-
         self.splash.centerWindow("70%", "50%")
         self.put(RED + "q2rad did not start...")
 
@@ -137,27 +136,16 @@ class launcher:
 
         if self.t.exit_code != 0:
             self.splash.hide()
-            mess("Python was not found, go to www.python.org")
+            mess("Python was not found, please install and try again.")
+            webbrowser.open("python.org/downloads")
             return False
 
         if version.parse(python_version) < version.parse("3.8.1"):
             self.splash.hide()
             mess("Python version must be at least 3.8.1")
+            webbrowser.open("python.org/downloads")
             return False
         return True
-
-    # def run_q2rad(self):
-    #     # self.hide_splash()
-    #     self.set_timeout(10)
-    #     t = Q2Terminal(callback=self.terminal_callback)
-    #     t.run("cd q2rad")
-    #     code_string = "from q2rad.q2rad import main;main()"
-    #     t.run(f'{py3bin} -c "{code_string}"')
-    #     print(1111)
-    #     self.set_timeout(0)
-    #     if t.exit_code != 0:
-    #         return False
-    #     self.exit()
 
     def set_timeout(self, timeout=0):
         if self.splash:
