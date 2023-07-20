@@ -126,7 +126,7 @@ class launcher:
             return
         self.put(text)
         if "Failed to" in text:
-            self.splash.show_error_button()
+            self.put("__error__")
 
     def check_python(self):
         self.put(GREEN + "Checking python version...")

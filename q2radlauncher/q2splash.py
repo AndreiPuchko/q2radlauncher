@@ -60,7 +60,12 @@ class Q2Splash:
 
         self.after_interval = 10
         self.splash_screen = tk.Toplevel()
-        self.splash_screen.overrideredirect(True)
+        # self.splash_screen.overrideredirect(True)
+
+        self.splash_screen.protocol("WM_DELETE_WINDOW", self.empty_event)
+        self.splash_screen.resizable(0, 0)
+
+        self.splash_screen.transient()
         self.splash_screen.title("q2rad launcher")
         self.centerWindow(width, height)
 
@@ -72,6 +77,9 @@ class Q2Splash:
         self.current_color = None
         self.worker.start()
         self.splash_screen.mainloop()
+
+    def empty_event(self):
+        pass
 
     def create_gui(self):
         self.title_frame = tk.Frame(self.splash_screen)
@@ -147,6 +155,8 @@ class Q2Splash:
                 self.splash_screen.withdraw()
             elif task == "__show__":
                 self.splash_screen.deiconify()
+            elif task == "__error__":
+                self.show_error_button()
             else:
                 self.set_text(task)
         self.splash_screen.after(self.after_interval, self.auto_step)
@@ -162,6 +172,7 @@ class Q2Splash:
             self.hide()
             self.root.update()
             self.set_timeout()
+            self.splash_screen.destroy()
             self.root.destroy()
             sys.exit(0)
 
@@ -244,9 +255,9 @@ if __name__ == "__main__":
         splash.put(RED + " 111 " + RESET)
         t = time.time()
         elapsed = lambda: time.time() - t
-        while elapsed() < 2:
+        while elapsed() < 6:
             splash.put(f"time {elapsed()} --")
-            time.sleep(0.1)
+            time.sleep(0.4)
         splash.show_error_button()
         splash.close()
         print("done")
