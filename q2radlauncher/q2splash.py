@@ -151,7 +151,7 @@ class Q2Splash:
                 self.exit()
             elif task == "":
                 pass
-            elif task == "__hide__":
+            elif task == "__hide__" or  "Starting q2rad..." in task or  "Successfully installed" in task:
                 self.splash_screen.withdraw()
             elif task == "__show__":
                 self.splash_screen.deiconify()
@@ -159,6 +159,7 @@ class Q2Splash:
                 self.show_error_button()
             else:
                 self.set_text(task)
+            self.root.update()
         self.splash_screen.after(self.after_interval, self.auto_step)
 
     def error_button_click(self):

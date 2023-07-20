@@ -75,7 +75,7 @@ class launcher:
         self.splash = splash
         self.remove_temp_file()
         self.t = Q2Terminal(callback=self.terminal_callback)
-        self.put(GREEN + "Starting q2rad..." + RESET)
+        self.put(GREEN + "Starting q2rad." + RESET)
 
         if run_q2rad():
             self.exit()
