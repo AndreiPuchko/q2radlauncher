@@ -62,7 +62,7 @@ class Q2Splash:
         self.splash_screen = tk.Toplevel()
         # self.splash_screen.overrideredirect(True)
 
-        self.splash_screen.protocol("WM_DELETE_WINDOW", self.empty_event)
+        self.splash_screen.protocol("WM_DELETE_WINDOW", self.close_windows_event)
         self.splash_screen.resizable(0, 0)
 
         self.splash_screen.transient()
@@ -75,11 +75,18 @@ class Q2Splash:
         self.timestart = time.time()
         self.is_error = False
         self.current_color = None
-        self.worker.start()
+        self.worker_started = False
+        # self.start_worker()
         self.splash_screen.mainloop()
 
-    def empty_event(self):
-        pass
+    def start_worker(self):
+        self.worker_started = True
+        self.worker.start()
+        self.show_progressbar()
+
+    def close_windows_event(self):
+        if not self.worker_started:
+            self.exit()
 
     def create_gui(self):
         self.title_frame = tk.Frame(self.splash_screen)
@@ -94,8 +101,15 @@ class Q2Splash:
 
         self.title_frame.pack(side="top", fill="x", expand="no")
 
+        self.options_frame = tk.Frame(self.splash_screen)
+
+        self.install_button = tk.Button(
+            self.options_frame, text="Install", command=self.start_worker
+        )
+        self.install_button.pack(padx=5, pady=5)
+        self.options_frame.pack(side="top", fill="x", expand="no")
+
         self.progress_stage = tk.Label(self.splash_screen, text="", font=("", 14))
-        self.progress_stage.pack(anchor=tk.W, side="top")
 
         self.pb_frame = tk.Frame(self.splash_screen)
         self.progress_label = tk.Label(self.pb_frame, text="")
@@ -110,7 +124,6 @@ class Q2Splash:
         )
         self.progressbar.pack(side=tk.LEFT, expand=True, padx=5, pady=5)
 
-        self.pb_frame.pack(side="top")
 
         self.stdoutput = ScrolledText(self.splash_screen)
         self.stdoutput.config(state=tk.DISABLED)
@@ -131,6 +144,10 @@ class Q2Splash:
 
         self.splash_screen.after(self.after_interval, self.auto_step)
         self.starttime = time.time()
+
+    def show_progressbar(self):
+        self.progress_stage.pack(anchor=tk.W, side="top")
+        self.pb_frame.pack(side="top")
 
     def show_error_button(self):
         self.error_button_frame.pack(side="bottom", padx=5, pady=5)
