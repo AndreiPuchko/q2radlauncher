@@ -47,9 +47,7 @@ logo_png = (
 
 
 class Q2Splash:
-    def __init__(
-        self, queue=queue.Queue(), max=None, width=None, height=None, worker=None
-    ):
+    def __init__(self, queue=queue.Queue(), max=None, width=None, height=None, worker=None):
         if worker is None:
             return
         self.queue = queue
@@ -82,6 +80,9 @@ class Q2Splash:
     def start_worker(self):
         self.worker_started = True
         self.worker.start()
+        # self.pb_frame.grid()
+        self.show_progressbar()
+        self.options_frame.grid_remove()
         self.show_progressbar()
 
     def close_windows_event(self):
@@ -89,68 +90,109 @@ class Q2Splash:
             self.exit()
 
     def create_gui(self):
-        self.title_frame = tk.Frame(self.splash_screen)
+        if 0.1:  # title frame
+            self.title_frame = tk.Frame(self.splash_screen)
+            im = tk.PhotoImage(data=logo_png)
+            self.icon = tk.Label(self.title_frame, image=im, text="")
+            self.icon.image = im
+            self.icon.pack(side="left")
 
-        im = tk.PhotoImage(data=logo_png)
-        self.icon = tk.Label(self.title_frame, image=im, text="")
-        self.icon.image = im
-        self.icon.pack(side="left")
+            self.title = tk.Label(self.title_frame, text="q2rad online installer", font=("", 20))
+            self.title.pack(anchor=tk.S, side="left", fill=tk.BOTH)
+            self.title_frame.grid(row=0, column=0, sticky=tk.W)
 
-        self.title = tk.Label(self.title_frame, text="q2rad launcher", font=("", 20))
-        self.title.pack(anchor=tk.S, side="left", fill=tk.BOTH)
+        if 1:  # options frame
+            self.radio_value = tk.IntVar()
+            self.radio_value.set(1)
 
-        self.title_frame.pack(side="top", fill="x", expand="no")
+            self.options_frame = tk.Frame(self.splash_screen)
+            self.radio_local = tk.Radiobutton(
+                self.options_frame, text="Local python folder", variable=self.radio_value, value=1
+            )
+            self.radio_venv = tk.Radiobutton(
+                self.options_frame, text="Global python with Venv", variable=self.radio_value, value=2
+            )
 
-        self.options_frame = tk.Frame(self.splash_screen)
+            self.install_button = tk.Button(self.options_frame, text="Install", command=self.start_worker)
+            self.close_button = tk.Button(self.options_frame, text="Close", command=self.close_windows_event)
+            self.radio_local.pack(side=tk.LEFT)
+            self.radio_venv.pack(side=tk.LEFT)
+            self.install_button.pack(side=tk.LEFT, padx=20, pady=5, ipadx=10)
+            self.close_button.pack(side=tk.LEFT, padx=20, pady=5, ipadx=10)
+            self.options_frame.grid(row=1, column=0)
 
-        self.install_button = tk.Button(
-            self.options_frame, text="Install", command=self.start_worker
-        )
-        self.install_button.pack(padx=5, pady=5)
-        self.options_frame.pack(side="top", fill="x", expand="no")
+        if 2:  # progressbar text
+            self.pb_frame = tk.Frame(self.splash_screen)
+            self.progress_stage = tk.Label(self.pb_frame, text="Task", font=("", 14))
+            self.progress_stage.pack(side=tk.TOP, fill="x", expand="no")
 
-        self.progress_stage = tk.Label(self.splash_screen, text="", font=("", 14))
+            self.progress_label = tk.Label(self.pb_frame, text="6555")
+            self.progress_label.pack(fill=tk.X, side=tk.RIGHT)
 
-        self.pb_frame = tk.Frame(self.splash_screen)
-        self.progress_label = tk.Label(self.pb_frame, text="")
-        self.progress_label.pack(fill=tk.X, side=tk.RIGHT)
+            self.progressbar = Progressbar(
+                self.pb_frame,
+                orient=tk.HORIZONTAL,
+                length=self.splash_screen.winfo_screenwidth(),
+                mode="determinate" if self.max else "indeterminate",
+                maximum=self.max if self.max else 50,
+            )
+            self.progressbar.pack(side=tk.LEFT)
+            self.pb_frame.grid(row=2, column=0)
+            self.hide_progressbar()
+            # self.pb_frame.grid_remove()
 
-        self.progressbar = Progressbar(
-            self.pb_frame,
-            orient=tk.HORIZONTAL,
-            length=self.splash_screen.winfo_screenwidth(),
-            mode="determinate" if self.max else "indeterminate",
-            maximum=self.max if self.max else 50,
-        )
-        self.progressbar.pack(side=tk.LEFT, expand=True, padx=5, pady=5)
+        if 3:
+            self.stdoutput = ScrolledText(self.splash_screen)
+            self.stdoutput.config(state=tk.DISABLED)
+            self.stdoutput.tag_config("red", foreground="red")
+            self.stdoutput.tag_config("red", foreground="red")
+            self.stdoutput.tag_config("green", foreground="green")
+            self.stdoutput.tag_config("yellow", foreground="yellow")
+            self.stdoutput.grid_propagate(False)
+            self.stdoutput.grid(row=3, column=0)
 
+        if 4:
+            self.error_button_frame = tk.Frame(self.splash_screen)
+            self.error_button = tk.Button(
+                self.error_button_frame, text="Close", command=self.done_button_click
+            )
+            self.error_button.pack(padx=5, pady=5)
+            self.error_button_frame.grid(row=4, column=0)
+            self.error_button_frame.grid_remove()
 
-        self.stdoutput = ScrolledText(self.splash_screen)
-        self.stdoutput.config(state=tk.DISABLED)
-        self.stdoutput.tag_config("red", foreground="red")
-        self.stdoutput.tag_config("red", foreground="red")
-        self.stdoutput.tag_config("green", foreground="green")
-        self.stdoutput.tag_config("yellow", foreground="yellow")
+        if 4:
+            self.done_button_frame = tk.Frame(self.splash_screen)
+            self.done_button = tk.Button(
+                self.done_button_frame, text="Close", command=self.done_button_click
+            )
+            self.done_button.pack(padx=5, pady=5)
+            self.done_button_frame.grid(row=4, column=0)
+            self.done_button_frame.grid_remove()
 
-        self.stdoutput.pack(side="top", fill=tk.BOTH, expand=True, padx=5, pady=5)
-        self.stdoutput.pack_propagate(False)
+        self.splash_screen.grid_rowconfigure(0, weight=1)
+        self.splash_screen.grid_rowconfigure(1, weight=1)
+        self.splash_screen.grid_rowconfigure(2, weight=1)
+        self.splash_screen.grid_rowconfigure(3, weight=5)
+        self.splash_screen.grid_rowconfigure(4, weight=1)
 
-        self.error_button_frame = tk.Frame(self.splash_screen)
-        self.error_button = tk.Button(
-            self.error_button_frame, text="Close", command=self.error_button_click
-        )
-        self.error_button.pack(padx=5, pady=5)
-        # self.show_error_button()
+        self.splash_screen.grid_columnconfigure(0, weight=1)
 
         self.splash_screen.after(self.after_interval, self.auto_step)
         self.starttime = time.time()
 
-    def show_progressbar(self):
-        self.progress_stage.pack(anchor=tk.W, side="top")
-        self.pb_frame.pack(side="top")
+    def hide_progressbar(self):
+        print("hide pb")
+        self.pb_frame.grid_remove()
 
-    def show_error_button(self):
-        self.error_button_frame.pack(side="bottom", padx=5, pady=5)
+
+    def show_progressbar(self):
+        # self.progress_stage.pack(anchor=tk.W, side="top")
+        # self.progress_stage.grid()
+        self.pb_frame.grid()
+
+    def show_done_button(self):
+        self.hide_progressbar()
+        self.done_button_frame.grid()
         self.root.update()
 
     def auto_step(self):
@@ -168,18 +210,18 @@ class Q2Splash:
                 self.exit()
             elif task == "":
                 pass
-            elif task == "__hide__" or  "Starting q2rad..." in task or  "Successfully installed" in task:
+            elif task == "__hide__" or "Starting q2rad..." in task or "Successfully installed" in task:
                 self.splash_screen.withdraw()
             elif task == "__show__":
                 self.splash_screen.deiconify()
             elif task == "__error__":
-                self.show_error_button()
+                self.show_done_button()
             else:
                 self.set_text(task)
             self.root.update()
         self.splash_screen.after(self.after_interval, self.auto_step)
 
-    def error_button_click(self):
+    def done_button_click(self):
         self.is_error = False
         self.exit()
 
@@ -276,8 +318,8 @@ if __name__ == "__main__":
         while elapsed() < 6:
             splash.put(f"time {elapsed()} --")
             time.sleep(0.4)
-        splash.show_error_button()
-        splash.close()
+        splash.show_done_button()
+        # splash.close()
         print("done")
 
     Q2Splash(worker=worker)
