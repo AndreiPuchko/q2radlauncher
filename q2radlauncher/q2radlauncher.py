@@ -3,12 +3,17 @@ import sys
 import os
 from packaging import version
 from tkinter import messagebox
-from q2splash import Q2Splash, GREEN, RED, RESET
+from q2splash import Q2Splash, GREEN
 import subprocess
 import urllib.request
+import zipfile
 import logging
 import time
 import webbrowser
+
+PYTHON_VERSION = "3.11.7"
+PYTHON_FOLDER = f"q2rad/python.loc.{PYTHON_VERSION}"
+PYTHON_SOURCE = f"https://www.python.org/ftp/python/{PYTHON_VERSION}/python-{PYTHON_VERSION}-embed-amd64.zip"
 
 
 if "darwin" in sys.platform:
@@ -20,11 +25,6 @@ start_dir = os.path.abspath(".")
 
 messagebox_title = "q2rad launcher"
 
-py3bin = os.path.abspath(
-    f"""q2rad/q2rad/{"Scripts" if "win32" in sys.platform else "bin"}/python"""
-)
-code_string = "from q2rad.q2rad import main;main()"
-
 
 def mess(text):
     messagebox.showerror(
@@ -34,13 +34,23 @@ def mess(text):
 
 
 def run_q2rad():
+    code_string = "from q2rad.q2rad import main;main()"
+    bin_extention = "w.exe" if "win32" in sys.platform else ""
+
+    if os.path.isfile(f"{PYTHON_FOLDER}/python{bin_extention}"):
+    # if os.path.isdir(os.path.dirname(os.path.abspath(f"{PYTHON_FOLDER}/python"))):
+        py3bin = os.path.abspath(f"{PYTHON_FOLDER}/python")
+    elif os.path.isdir("q2rad/q2rad"):
+        py3bin = os.path.abspath(f'q2rad/q2rad/{"Scripts" if "win32" in sys.platform else "bin"}/python{bin_extention}')
+    else:
+        return False
     try:
         os.chdir("q2rad")
         if "win32" not in sys.platform:
             os.execv(py3bin, [py3bin, "-c", code_string])
         else:
             subprocess.Popen(
-                ["powershell", f'&"{py3bin}w"', "-c", f'"{code_string}"'],
+                ["powershell", f'&"{py3bin}"', "-c", f'"{code_string}"'],
                 start_new_session=True,
                 creationflags=subprocess.CREATE_NO_WINDOW,
             )
@@ -61,6 +71,80 @@ logging.basicConfig(
 
 class launcher:
     def __init__(self, splash: Q2Splash = None):
+        self.splash = splash
+        self.terminal = Q2Terminal(callback=self.terminal_callback)
+        if self.splash.radio_install_option.get() == self.splash.GLOBAL_PYTHON:
+            self.install_global()
+        else:
+            self.install_local()
+
+    def install_local(self):
+        if not os.path.isdir(PYTHON_FOLDER):
+            os.makedirs(PYTHON_FOLDER)
+
+        self.terminal.run(f"cd {PYTHON_FOLDER}")
+
+        if not os.path.isfile(f"{PYTHON_FOLDER}/python.exe"):
+            if not os.path.isfile(f"{PYTHON_FOLDER}/python.zip"):
+                self.put(GREEN + f"Downloading {PYTHON_SOURCE}...")
+                urllib.request.urlretrieve(PYTHON_SOURCE, f"{PYTHON_FOLDER}/python.zip")
+                self.put(GREEN + f"{PYTHON_SOURCE} downloaded.")
+
+            with zipfile.ZipFile(f"{PYTHON_FOLDER}/python.zip", "r") as zip_ref:
+                zip_ref.extractall(PYTHON_FOLDER)
+                self.put(GREEN + f"{PYTHON_FOLDER}/python.zip unzipped.")
+            os.remove(f"{PYTHON_FOLDER}/python.zip")
+
+        self.prepare_pth()
+
+        self.terminal.run("./python -m pip -V")
+        if self.terminal.exit_code != 0:
+            if not os.path.isfile(f"{PYTHON_FOLDER}/get-pip.py"):
+                self.put(GREEN + "Downloading pip...")
+                urllib.request.urlretrieve(
+                    "https://bootstrap.pypa.io/get-pip.py", f"{PYTHON_FOLDER}/get-pip.py"
+                )
+                self.put(GREEN + "Pip downloaded.")
+            self.put(GREEN + "Installing pip...")
+            self.terminal.run("./python get-pip.py --no-warn-script-location")
+            self.put(GREEN + "Pip installed.")
+            if self.terminal.exit_code != 0:
+                self.put(GREEN + "get-pip.py error!")
+                return
+            os.remove(f"{PYTHON_FOLDER}/get-pip.py")
+
+        self.terminal.run("cd ..")
+        # self.terminal.run("pwd")
+        # self.terminal.run(f"{os.path.abspath(PYTHON_FOLDER)}/python -m q2rad")
+        # if self.terminal.exit_code != 0:
+        self.put(GREEN + "Install q2rad")
+        self.terminal.run(
+            f"{os.path.abspath(PYTHON_FOLDER)}/python -m pip install --no-warn-script-location q2rad"
+        )
+        self.splash.show_done_button()
+        self.put(GREEN + "q2rad installed. Press Close button to start q2rad")
+        while not self.splash.done_pressed:
+            pass
+        run_q2rad()
+
+    def prepare_pth(self):
+        vrs = "".join(PYTHON_VERSION.split(".")[:2])
+        data = open(f"{PYTHON_FOLDER}/python{vrs}._pth").read()
+        update = False
+        if "#import site" in data:
+            data = data.replace("#import site", "import site")
+            update = True
+        data0 = data.split("\n")
+        if "Lib" not in data:
+            data0.insert(1, "Lib")
+            update = True
+        if "Scripts" not in data:
+            data0.insert(2, "Scripts")
+            update = True
+        if update:
+            open(f"{PYTHON_FOLDER}/python{vrs}._pth", "w").write("\n".join(data0))
+
+    def install_global(self):
         if "win32" in sys.platform:
             self.python = "py"
         else:
@@ -68,20 +152,15 @@ class launcher:
 
         self.q2rad_folder = "./q2rad"
         self.bin_folder = "Scripts" if "win32" in sys.platform else "bin"
-        self.py3bin = os.path.abspath(
-            f"{self.q2rad_folder}/q2rad/{self.bin_folder}/python"
-        )
 
-        self.splash = splash
         self.remove_temp_file()
-        self.t = Q2Terminal(callback=self.terminal_callback)
-        self.put(GREEN + "Starting q2rad." + RESET)
 
-        if run_q2rad():
-            self.exit()
+        # self.put(GREEN + "Starting q2rad." + RESET)
+        # if run_q2rad():
+        #     self.exit()
 
-        self.splash.centerWindow("70%", "50%")
-        self.put(RED + "q2rad did not start...")
+        # self.splash.centerWindow("70%", "50%")
+        # self.put(RED + "q2rad did not start...")
 
         self.put(GREEN + "Checking python...")
         time.sleep(0.5)
@@ -95,8 +174,8 @@ class launcher:
             "_tmp.py",
         )
 
-        self.t.run(f"{self.python} _tmp.py")
-        print("Done...")
+        self.terminal.run(f"{self.python} _tmp.py")
+        self.put(GREEN + "Done...")
         self.remove_temp_file()
 
         self.exit()
@@ -130,11 +209,9 @@ class launcher:
 
     def check_python(self):
         self.put(GREEN + "Checking python version...")
-        python_version = (
-            self.t.run(f"{self.python} --version")[0].lower().replace("python ", "")
-        )
+        python_version = self.terminal.run(f"{self.python} --version")[0].lower().replace("python ", "")
 
-        if self.t.exit_code != 0:
+        if self.terminal.exit_code != 0:
             self.splash.hide()
             mess("Python was not found, please install and try again.")
             webbrowser.open("python.org/downloads")
@@ -159,4 +236,5 @@ def worker(splash):
 if run_q2rad():
     sys.exit(0)
 else:
-    Q2Splash(worker=worker, width="15%", height="15%")
+    # Q2Splash(worker=worker, width="15%", height="15%")
+    Q2Splash(worker=worker)
