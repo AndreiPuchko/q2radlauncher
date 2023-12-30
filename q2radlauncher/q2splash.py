@@ -106,7 +106,10 @@ class Q2Splash:
 
         if 1:  # options frame
             self.radio_install_option = tk.IntVar()
-            self.radio_install_option.set(self.LOCAL_PYTHON)
+            if "win32" in sys.platform:
+                self.radio_install_option.set(self.LOCAL_PYTHON)
+            else:
+                self.radio_install_option.set(self.GLOBAL_PYTHON)
 
             self.options_frame = tk.Frame(self.grid_frame, padx=15, pady=5)
             self.radio_local = tk.Radiobutton(
@@ -124,8 +127,9 @@ class Q2Splash:
 
             self.install_button = tk.Button(self.options_frame, text="Install", command=self.start_worker)
             self.close_button = tk.Button(self.options_frame, text="Close", command=self.close_windows_event)
-            self.radio_local.pack(side=tk.LEFT)
-            self.radio_venv.pack(side=tk.LEFT)
+            if "win32" in sys.platform:
+                self.radio_local.pack(side=tk.LEFT)
+                self.radio_venv.pack(side=tk.LEFT)
             self.install_button.pack(side=tk.LEFT, padx=20, pady=0, ipadx=10)
             self.close_button.pack(side=tk.LEFT, padx=20, pady=5, ipadx=10)
             self.options_frame.grid(row=1, column=0)
