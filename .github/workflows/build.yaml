@@ -10,7 +10,6 @@ jobs:
   createrelease:
     permissions: write-all
     name: Create Release
-    allowUpdates: true
     runs-on: [ubuntu-latest]
     steps:
     - name: Create Release
@@ -88,6 +87,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
+        allowUpdates: true
         upload_url: ${{ steps.get_release_info.outputs.upload_url }}
         asset_path: ./dist/${{ matrix.OUT_FILE_NAME}}
         asset_name: ${{ matrix.OUT_FILE_NAME}}
