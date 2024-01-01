@@ -38,10 +38,11 @@ def run_q2rad():
     bin_extention = "w.exe" if "win32" in sys.platform else ""
 
     if os.path.isfile(f"{PYTHON_FOLDER}/python{bin_extention}"):
-    # if os.path.isdir(os.path.dirname(os.path.abspath(f"{PYTHON_FOLDER}/python"))):
         py3bin = os.path.abspath(f"{PYTHON_FOLDER}/python")
     elif os.path.isdir("q2rad/q2rad"):
-        py3bin = os.path.abspath(f'q2rad/q2rad/{"Scripts" if "win32" in sys.platform else "bin"}/python{bin_extention}')
+        py3bin = os.path.abspath(
+            f'q2rad/q2rad/{"Scripts" if "win32" in sys.platform else "bin"}/python{bin_extention}'
+        )
     else:
         return False
     try:
@@ -164,7 +165,7 @@ class launcher:
 
         self.put(GREEN + "Checking python...")
         time.sleep(0.5)
-        if self.check_python() == False:
+        if self.check_python() is False:
             self.splash.close()
             sys.exit()
 
