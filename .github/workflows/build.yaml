@@ -56,8 +56,8 @@ jobs:
             CMD_BUILD: >
                 pyinstaller --onefile --noconsole --icon=q2rad.ico ./q2radlauncher/q2radlauncher.py &&
                 cd dist/ &&
-                zip -r9 q2radlauncher q2radlauncher
-            OUT_FILE_NAME: q2radlauncher.zip
+                zip -r9 q2radlauncher-linux q2radlauncher
+            OUT_FILE_NAME: q2radlauncher-linux.zip
             ASSET_MIME: application/zip
     steps:
     - uses: actions/checkout@v1
