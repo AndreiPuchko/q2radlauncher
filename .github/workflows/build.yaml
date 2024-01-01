@@ -43,7 +43,7 @@ jobs:
             CMD_BUILD: >
                 pyinstaller --onefile --noconsole --icon=q2rad.ico ./q2radlauncher/q2radlauncher.py &&
                 cd dist/ &&
-                zip -r9 q2radlauncher q2radlauncher.app/                
+                zip -r9 q2radlauncher-macos q2radlauncher.app/                
             OUT_FILE_NAME: q2radlauncher-macos.zip
             ASSET_MIME: application/zip
           - os: windows-latest
@@ -87,7 +87,6 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        allowUpdates: true
         upload_url: ${{ steps.get_release_info.outputs.upload_url }}
         asset_path: ./dist/${{ matrix.OUT_FILE_NAME}}
         asset_name: ${{ matrix.OUT_FILE_NAME}}
