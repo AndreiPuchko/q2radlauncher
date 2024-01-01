@@ -43,7 +43,7 @@ jobs:
                 pyinstaller --onefile --noconsole --icon=q2rad.ico ./q2radlauncher/q2radlauncher.py &&
                 cd dist/ &&
                 zip -r9 q2radlauncher q2radlauncher.app/                
-            OUT_FILE_NAME: clipster.zip
+            OUT_FILE_NAME: q2radlauncher.zip
             ASSET_MIME: application/zip
           - os: windows-latest
             TARGET: windows
