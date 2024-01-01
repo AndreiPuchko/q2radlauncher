@@ -51,6 +51,14 @@ jobs:
             CMD_BUILD: pyinstaller --onefile --noconsole --icon=q2rad.ico .\q2radlauncher\q2radlauncher.py 
             OUT_FILE_NAME: q2radlauncher.exe
             ASSET_MIME: application/vnd.microsoft.portable-executable
+          - os: ubuntu-latest
+            TARGET: linux
+            CMD_BUILD: >
+                pyinstaller --onefile --noconsole --icon=q2rad.ico ./q2radlauncher/q2radlauncher.py &&
+                cd dist/ &&
+                zip -r9 q2radlauncher q2radlauncher
+            OUT_FILE_NAME: q2radlauncher.zip
+            ASSET_MIME: application/zip
     steps:
     - uses: actions/checkout@v1
     - name: Set up Python 3.9
