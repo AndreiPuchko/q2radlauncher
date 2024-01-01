@@ -31,6 +31,7 @@ jobs:
         path: release_url.txt
 
   build:
+    permissions: write-all
     name: Build packages
     needs: createrelease
     runs-on: ${{ matrix.os }}
@@ -43,7 +44,7 @@ jobs:
                 pyinstaller --onefile --noconsole --icon=q2rad.ico ./q2radlauncher/q2radlauncher.py &&
                 cd dist/ &&
                 zip -r9 q2radlauncher q2radlauncher.app/                
-            OUT_FILE_NAME: clipster.zip
+            OUT_FILE_NAME: q2radlauncher.zip
             ASSET_MIME: application/zip
           - os: windows-latest
             TARGET: windows
