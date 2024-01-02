@@ -38,7 +38,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - os: macos-11
+          - os: macos-latest
             TARGET: macos
             CMD_BUILD: >
                 pyinstaller --onefile --noconsole --icon=q2rad.ico ./q2radlauncher/q2radlauncher.py &&
