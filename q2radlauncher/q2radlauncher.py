@@ -234,5 +234,4 @@ def worker(splash):
 if run_q2rad():
     sys.exit(0)
 else:
-    # Q2Splash(worker=worker, width="15%", height="15%")
     Q2Splash(worker=worker)
