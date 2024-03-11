@@ -119,18 +119,10 @@ class launcher:
             os.remove(f"{PYTHON_FOLDER}/get-pip.py")
 
         self.terminal.run("cd ../..")
-        # self.terminal.run("pwd")
-        # self.terminal.run(f"{os.path.abspath(PYTHON_FOLDER)}/python -m q2rad")
-        # if self.terminal.exit_code != 0:
         self.put(GREEN + "Install q2rad")
-        # self.terminal.run("ls")
         self.terminal.run(f"{PYTHON_FOLDER}'/python' -m pip install --no-warn-script-location q2rad")
         self.put(GREEN + "q2rad installed.")
         self.splash.close()
-        # self.splash.show_done_button()
-        # self.put(GREEN + "q2rad installed. Press Close button to start q2rad")
-        # while not self.splash.done_pressed:
-        #     pass
         run_q2rad()
 
     def prepare_pth(self):
