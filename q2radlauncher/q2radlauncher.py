@@ -62,8 +62,12 @@ def run_q2rad():
     return False
 
 
+if not os.path.isdir("q2rad"):
+    os.makedirs("q2rad")
+
+
 logging.basicConfig(
-    filename="q2launcher.log",
+    filename="q2rad/q2launcher.log",
     encoding="utf-8",
     level=logging.DEBUG,
     format="[%(asctime)s] - %(message)s",
@@ -114,18 +118,19 @@ class launcher:
                 return
             os.remove(f"{PYTHON_FOLDER}/get-pip.py")
 
-        self.terminal.run("cd ..")
+        self.terminal.run("cd ../..")
         # self.terminal.run("pwd")
         # self.terminal.run(f"{os.path.abspath(PYTHON_FOLDER)}/python -m q2rad")
         # if self.terminal.exit_code != 0:
         self.put(GREEN + "Install q2rad")
-        self.terminal.run(
-            f"{os.path.abspath(PYTHON_FOLDER)}/python -m pip install --no-warn-script-location q2rad"
-        )
-        self.splash.show_done_button()
-        self.put(GREEN + "q2rad installed. Press Close button to start q2rad")
-        while not self.splash.done_pressed:
-            pass
+        # self.terminal.run("ls")
+        self.terminal.run(f"{PYTHON_FOLDER}'/python' -m pip install --no-warn-script-location q2rad")
+        self.put(GREEN + "q2rad installed.")
+        self.splash.close()
+        # self.splash.show_done_button()
+        # self.put(GREEN + "q2rad installed. Press Close button to start q2rad")
+        # while not self.splash.done_pressed:
+        #     pass
         run_q2rad()
 
     def prepare_pth(self):
@@ -205,7 +210,7 @@ class launcher:
         if text in ["True", "False", "0", "1"]:
             return
         self.put(text)
-        if "Failed to" in text:
+        if "Failed to" in text or "FullyQualifiedErrorId" in text:
             self.put("__error__")
 
     def check_python(self):
