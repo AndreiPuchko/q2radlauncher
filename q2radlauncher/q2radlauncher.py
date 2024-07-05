@@ -10,11 +10,13 @@ import zipfile
 import logging
 import time
 import webbrowser
+import ssl
 
 PYTHON_VERSION = "3.11.7"
 PYTHON_FOLDER = f"q2rad/python.loc.{PYTHON_VERSION}"
 PYTHON_SOURCE = f"https://www.python.org/ftp/python/{PYTHON_VERSION}/python-{PYTHON_VERSION}-embed-amd64.zip"
 
+ssl._create_default_https_context = ssl._create_unverified_context
 
 if "darwin" in sys.platform:
     path = sys.argv[0].split("/Contents/MacOS")[0]
@@ -92,7 +94,11 @@ class launcher:
         if not os.path.isfile(f"{PYTHON_FOLDER}/python.exe"):
             if not os.path.isfile(f"{PYTHON_FOLDER}/python.zip"):
                 self.put(GREEN + f"Downloading {PYTHON_SOURCE}...")
-                urllib.request.urlretrieve(PYTHON_SOURCE, f"{PYTHON_FOLDER}/python.zip")
+                try:
+                    urllib.request.urlretrieve(PYTHON_SOURCE, f"{PYTHON_FOLDER}/python.zip")
+                except Exception as e:
+                    logging.error(f"{e}")
+                    sys.exit()
                 self.put(GREEN + f"{PYTHON_SOURCE} downloaded.")
 
             with zipfile.ZipFile(f"{PYTHON_FOLDER}/python.zip", "r") as zip_ref:
